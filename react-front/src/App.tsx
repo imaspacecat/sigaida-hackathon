@@ -25,7 +25,8 @@ const App: React.FC = () => {
 
     return (
         <div style={styles.container}>
-            <h1 style={styles.header}>PoliDonor</h1>
+            <h1 style={styles.header}>CampaignCo</h1>
+            <p style={styles.subheader}>Find campaigns that align with your values</p>
             <div style={styles.inputWrapper}>
                 <textarea
                     style={styles.textBox}
@@ -33,10 +34,10 @@ const App: React.FC = () => {
                     value={inputText}
                     onChange={handleChange}
                     onKeyDown={handleKeyPress}
-                    rows={4}
+                    rows={1}
                 />
-                <button onClick={handleSubmit} style={styles.button}>Enter</button>
             </div>
+            <button onClick={handleSubmit} style={styles.button}>Enter</button>
         </div>
     );
 };
@@ -49,24 +50,31 @@ const styles = {
         justifyContent: 'center',
         width: '100vw',
         height: '100vh',
-        backgroundColor: '#E84A27',
+        background: 'linear-gradient(135deg, #6A0DAD, #D8B4E2)',
         color: '#fff',
         textAlign: 'center',
+        boxSizing: 'border-box',
         margin: 0,
         padding: 0,
-        boxSizing: 'border-box',
     } as React.CSSProperties,
     header: {
-        fontSize: '2.5rem',
-        marginBottom: '20px',
+        fontSize: '2.8rem',
+        fontWeight: 'bold',
         color: '#ffffff',
+        marginBottom: '10px',
+    } as React.CSSProperties,
+    subheader: {
+        fontSize: '1.2rem',
+        color: '#E0CCE1',
+        fontStyle: 'italic',
+        marginBottom: '30px',
     } as React.CSSProperties,
     inputWrapper: {
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        backgroundColor: '#333',
-        borderRadius: '20px',
+        backgroundColor: '#D8B4E2', // Light purple for contrast
+        borderRadius: '30px',
         border: '1px solid #ffffff',
         padding: '10px',
         width: '100%',
@@ -74,28 +82,29 @@ const styles = {
         boxSizing: 'border-box',
     } as React.CSSProperties,
     textBox: {
-        flex: 1,
+        width: '100%',
         padding: '15px',
         fontSize: '16px',
-        color: '#ffffff',
-        backgroundColor: '#333',
+        color: '#4A3A57',
+        backgroundColor: '#D8B4E2',
         border: 'none',
-        borderRadius: '15px',
+        borderRadius: '30px',
         outline: 'none',
         resize: 'none',
         boxSizing: 'border-box',
         fontFamily: 'inherit',
     } as React.CSSProperties,
     button: {
-        marginLeft: '10px',
-        padding: '10px 20px',
+        marginTop: '20px',
+        padding: '12px 40px',
         fontSize: '16px',
-        backgroundColor: '#333',
-        color: '#fff',
-        border: '1px solid #ffffff',
-        borderRadius: '15px',
+        backgroundColor: '#D8B4E2',
+        color: '#4A3A57',
+        border: 'none',
+        borderRadius: '30px',
         cursor: 'pointer',
         fontFamily: 'inherit',
+        fontWeight: 'bold',
     } as React.CSSProperties,
 };
 
