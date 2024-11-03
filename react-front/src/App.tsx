@@ -1,111 +1,137 @@
-import React, { useState, ChangeEvent, KeyboardEvent } from 'react';
+import React, { useState } from 'react';
+import StartingPage from './StartingPage';
+import PolicySelection from './PolicySelection';
+import CampaignList from './CampaignList';
+import CampaignDetail from './CampaignDetail';
+
+interface Policy {
+    id: number;
+    name: string;
+    userChoice: number; // Make sure this is a number to align with slider values
+}
+
+interface Campaign {
+    id: number;
+    name: string;
+    description: string;
+}
+
+const initialPolicies: Policy[] = [
+    { id: 1, name: "Pro-Choice", userChoice: 0 },
+    { id: 2, name: "Requiring ID to Vote", userChoice: 0 },
+    { id: 3, name: "Gun-Control", userChoice: 0 },
+];
+
+const placeholderCampaigns: Campaign[] = [
+    { id: 1, name: "Campaign A", description: "Details about Campaign A" },
+    { id: 2, name: "Campaign B", description: "Details about Campaign B" },
+];
 
 const App: React.FC = () => {
+    const [isMainScreen, setIsMainScreen] = useState(false);
     const [inputText, setInputText] = useState<string>('');
+    const [selectedCampaign, setSelectedCampaign] = useState<Campaign | null>(null);
+    const [policies, setPolicies] = useState<Policy[]>(initialPolicies);
 
-    const handleChange = (e: ChangeEvent<HTMLTextAreaElement>) => {
-        const text = e.target.value;
-        if (text.split(' ').length <= 150) {
-            setInputText(text); 
+    const handleStart = async () => {
+        // Send the user input to the backend to analyze sentiment
+        try {
+            const response = await fetch("http://127.0.0.1:8000/analyze", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({ text: inputText })
+            });
+            
+            if (!response.ok) {
+                throw new Error("Failed to analyze sentiment");
+            }
+            
+            const sentiments = await response.json();
+            
+            // Map response to update the policy sliders
+            setPolicies(prevPolicies =>
+                prevPolicies.map(policy => {
+                    const sentiment = sentiments.find((s: any) => s.policy.toLowerCase() === policy.name.toLowerCase());
+                    return {
+                        ...policy,
+                        userChoice: sentiment ? sentiment.score : 0 // Update score from sentiment analysis
+                    };
+                })
+            );
+            
+            setIsMainScreen(true); // Move to the main screen
+        } catch (error) {
+            console.error("Error analyzing sentiment:", error);
         }
     };
 
-    const handleSubmit = () => {
-        if (inputText.trim()) {
-            console.log('Submitted:', inputText);
-        }
-    };
+    const handleCampaignClick = (campaign: Campaign) => setSelectedCampaign(campaign);
+    const handleBackClick = () => setSelectedCampaign(null);
 
-    const handleKeyPress = (e: KeyboardEvent<HTMLTextAreaElement>) => {
-        if (e.key === 'Enter') {
-            e.preventDefault(); 
-            handleSubmit();
-        }
+    const updatePolicyChoice = (id: number, choice: number) => {
+        setPolicies(prevPolicies =>
+            prevPolicies.map(policy =>
+                policy.id === id ? { ...policy, userChoice: choice } : policy
+            )
+        );
     };
 
     return (
-        <div style={styles.container}>
-            <h1 style={styles.header}>CampaignCo</h1>
-            <p style={styles.subheader}>Find campaigns that align with your values</p>
-            <div style={styles.inputWrapper}>
-                <textarea
-                    style={styles.textBox}
-                    placeholder="Tell us about the policy issues you support..."
-                    value={inputText}
-                    onChange={handleChange}
-                    onKeyDown={handleKeyPress}
-                    rows={1}
+        <div style={styles.appContainer}>
+            {!isMainScreen ? (
+                <StartingPage
+                    inputText={inputText}
+                    setInputText={setInputText}
+                    onSubmit={handleStart}
                 />
-            </div>
-            <button onClick={handleSubmit} style={styles.button}>Enter</button>
+            ) : selectedCampaign ? (
+                <CampaignDetail campaign={selectedCampaign} onBackClick={handleBackClick} />
+            ) : (
+                <div style={styles.mainContent}>
+                    <div style={styles.leftPanel}>
+                        <PolicySelection policies={policies} updatePolicyChoice={updatePolicyChoice} />
+                    </div>
+                    <div style={styles.rightPanel}>
+                        <CampaignList campaigns={placeholderCampaigns} onCampaignClick={handleCampaignClick} />
+                    </div>
+                </div>
+            )}
         </div>
     );
 };
 
-const styles = {
-    container: {
+const styles: { [key: string]: React.CSSProperties } = {
+    appContainer: {
         display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
         justifyContent: 'center',
+        alignItems: 'center',
         width: '100vw',
         height: '100vh',
-        background: 'linear-gradient(135deg, #6A0DAD, #D8B4E2)',
-        color: '#fff',
-        textAlign: 'center',
-        boxSizing: 'border-box',
-        margin: 0,
-        padding: 0,
-    } as React.CSSProperties,
-    header: {
-        fontSize: '2.8rem',
-        fontWeight: 'bold',
-        color: '#ffffff',
-        marginBottom: '10px',
-    } as React.CSSProperties,
-    subheader: {
-        fontSize: '1.2rem',
-        color: '#E0CCE1',
-        fontStyle: 'italic',
-        marginBottom: '30px',
-    } as React.CSSProperties,
-    inputWrapper: {
+        backgroundColor: '#2e2e2e',
+    },
+    mainContent: {
+        display: 'flex',
+        width: '90%',
+        height: '90%',
+    },
+    leftPanel: {
+        flex: '1',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        backgroundColor: '#D8B4E2', // Light purple for contrast
-        borderRadius: '30px',
-        border: '1px solid #ffffff',
         padding: '10px',
-        width: '100%',
-        maxWidth: '500px',
         boxSizing: 'border-box',
-    } as React.CSSProperties,
-    textBox: {
-        width: '100%',
-        padding: '15px',
-        fontSize: '16px',
-        color: '#4A3A57',
-        backgroundColor: '#D8B4E2',
-        border: 'none',
-        borderRadius: '30px',
-        outline: 'none',
-        resize: 'none',
+    },
+    rightPanel: {
+        flex: '2',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        padding: '10px',
         boxSizing: 'border-box',
-        fontFamily: 'inherit',
-    } as React.CSSProperties,
-    button: {
-        marginTop: '20px',
-        padding: '12px 40px',
-        fontSize: '16px',
-        backgroundColor: '#D8B4E2',
-        color: '#4A3A57',
-        border: 'none',
-        borderRadius: '30px',
-        cursor: 'pointer',
-        fontFamily: 'inherit',
-        fontWeight: 'bold',
-    } as React.CSSProperties,
+    },
 };
 
 export default App;
