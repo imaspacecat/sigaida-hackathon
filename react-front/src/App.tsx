@@ -36,7 +36,7 @@ const App: React.FC = () => {
     const handleStart = async () => {
         // Send the user input to the backend to analyze sentiment
         try {
-            const response = await fetch("http://127.0.0.1:8000/analyze", {
+            const response = await fetch("http://127.0.0.1:5000/analyze", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json"
